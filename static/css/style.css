@@ -490,13 +490,15 @@ body {
     border-color: var(--badge-announcement-border);
 }
 
-/* Share & Action Buttons */
 .card-actions {
     display: flex;
     gap: 0.5rem;
 }
 
 .action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: transparent;
     border: none;
     color: var(--text-muted);
@@ -504,6 +506,7 @@ body {
     padding: 0.4rem;
     border-radius: 8px;
     transition: all var(--transition-fast);
+    position: relative;
 }
 
 .action-btn:hover {
@@ -514,6 +517,15 @@ body {
 .action-btn.tweet-btn:hover {
     color: #1da1f2;
     background-color: rgba(29, 161, 242, 0.1);
+}
+
+.action-btn.copy-btn:hover {
+    color: var(--badge-feature-text);
+    background-color: rgba(16, 185, 129, 0.15);
+}
+
+.action-btn.copy-btn.copied {
+    color: var(--badge-feature-text) !important;
 }
 
 .action-btn svg {

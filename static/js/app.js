@@ -5,6 +5,7 @@ let searchQuery = '';
 
 // DOM Elements
 const refreshBtn = document.getElementById('refresh-btn');
+const exportCsvBtn = document.getElementById('export-csv-btn');
 const spinner = document.getElementById('spinner');
 const searchInput = document.getElementById('search-input');
 const filterBtns = document.querySelectorAll('.filter-btn');
@@ -36,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function setupEventListeners() {
     refreshBtn.addEventListener('click', fetchReleaseNotes);
     retryBtn.addEventListener('click', fetchReleaseNotes);
+    exportCsvBtn.addEventListener('click', exportToCSV);
     
     // Search with basic debounce
     let searchTimeout;
@@ -228,6 +230,12 @@ function renderTimeline() {
                 <div class="card-header">
                     <span class="type-tag ${lowerType}">${up.type}</span>
                     <div class="card-actions">
+                        <button class="action-btn copy-btn" aria-label="Copy update to clipboard" title="Copy to clipboard">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
                         <button class="action-btn tweet-btn" aria-label="Share update on Twitter" title="Share on Twitter">
                             <svg viewBox="0 0 24 24" fill="currentColor">
                                 <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
@@ -240,6 +248,29 @@ function renderTimeline() {
                 </div>
             `;
             
+            // Hook up copy click handler
+            const copyBtn = card.querySelector('.copy-btn');
+            copyBtn.addEventListener('click', () => {
+                const plainText = new DOMParser().parseFromString(up.html, 'text/html').body.textContent.trim().replace(/\s+/g, ' ');
+                const copyText = `BigQuery ${up.type} (${up.title}): ${plainText}\nRead more: ${up.link}`;
+                
+                navigator.clipboard.writeText(copyText).then(() => {
+                    copyBtn.classList.add('copied');
+                    const originalSvg = copyBtn.innerHTML;
+                    copyBtn.innerHTML = `
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:1.15rem; height:1.15rem;">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                    `;
+                    setTimeout(() => {
+                        copyBtn.classList.remove('copied');
+                        copyBtn.innerHTML = originalSvg;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Failed to copy text: ', err);
+                });
+            });
+
             // Hook up tweet click handler
             card.querySelector('.tweet-btn').addEventListener('click', () => {
                 openTweetComposer(up);
@@ -321,4 +352,60 @@ function setupDialogLightDismiss() {
             }
         });
     }
+}
+
+// Export active updates to CSV
+function exportToCSV() {
+    // Filter updates exactly like renderTimeline
+    const filtered = allUpdates.filter(up => {
+        const matchesCategory = activeCategory === 'all' || up.type.toLowerCase() === activeCategory.toLowerCase();
+        
+        const plainText = new DOMParser().parseFromString(up.html, 'text/html').body.textContent.toLowerCase();
+        const matchesSearch = searchQuery === '' || 
+                              up.type.toLowerCase().includes(searchQuery) || 
+                              up.title.toLowerCase().includes(searchQuery) ||
+                              plainText.includes(searchQuery);
+                              
+        return matchesCategory && matchesSearch;
+    });
+
+    if (filtered.length === 0) return;
+
+    // Define CSV header
+    const headers = ['Date', 'Category', 'Update Content', 'Link'];
+    
+    // Process updates into rows
+    const rows = filtered.map(up => {
+        const plainText = new DOMParser().parseFromString(up.html, 'text/html').body.textContent.trim().replace(/\s+/g, ' ');
+        
+        // Escape quotes by doubling them
+        const cleanDate = `"${up.title.replace(/"/g, '""')}"`;
+        const cleanCategory = `"${up.type.replace(/"/g, '""')}"`;
+        const cleanText = `"${plainText.replace(/"/g, '""')}"`;
+        const cleanLink = `"${up.link.replace(/"/g, '""')}"`;
+        
+        return [cleanDate, cleanCategory, cleanText, cleanLink];
+    });
+
+    // Create CSV Content
+    const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    // Create download link
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    
+    // Filename prefix
+    const categorySlug = activeCategory === 'all' ? 'all' : activeCategory.toLowerCase();
+    const searchSlug = searchQuery ? `_${searchQuery.replace(/[^a-z0-9]/gi, '_')}` : '';
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `bigquery_releases_${categorySlug}${searchSlug}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
