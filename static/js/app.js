@@ -6,6 +6,7 @@ let searchQuery = '';
 // DOM Elements
 const refreshBtn = document.getElementById('refresh-btn');
 const exportCsvBtn = document.getElementById('export-csv-btn');
+const themeToggleBtn = document.getElementById('theme-toggle-btn');
 const spinner = document.getElementById('spinner');
 const searchInput = document.getElementById('search-input');
 const filterBtns = document.querySelectorAll('.filter-btn');
@@ -28,16 +29,31 @@ const modalCloseBtn = document.getElementById('modal-close-btn');
 
 // Initialize App
 document.addEventListener('DOMContentLoaded', () => {
+    initializeTheme();
     fetchReleaseNotes();
     setupEventListeners();
     setupDialogLightDismiss();
 });
+
+// Initialize Theme
+function initializeTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+}
 
 // Setup Listeners
 function setupEventListeners() {
     refreshBtn.addEventListener('click', fetchReleaseNotes);
     retryBtn.addEventListener('click', fetchReleaseNotes);
     exportCsvBtn.addEventListener('click', exportToCSV);
+    
+    // Theme toggler
+    themeToggleBtn.addEventListener('click', () => {
+        const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    });
     
     // Search with basic debounce
     let searchTimeout;

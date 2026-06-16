@@ -41,6 +41,97 @@
     --transition-smooth: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Light Theme Variables */
+:root[data-theme="light"] {
+    --bg-primary: #f8fafc;
+    --bg-secondary: #ffffff;
+    --bg-glass: rgba(241, 245, 249, 0.75);
+    --bg-glass-hover: rgba(226, 232, 240, 0.85);
+    --border-glass: rgba(15, 23, 42, 0.08);
+    --border-glass-hover: rgba(15, 23, 42, 0.16);
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    
+    --accent-glow: rgba(59, 130, 246, 0.12);
+    --accent-twitter: #1da1f2;
+    --accent-twitter-hover: #1a91da;
+
+    /* Badges adjust for light background */
+    --badge-feature-bg: rgba(16, 185, 129, 0.08);
+    --badge-feature-text: #059669;
+    --badge-feature-border: rgba(16, 185, 129, 0.2);
+
+    --badge-breaking-bg: rgba(239, 68, 68, 0.08);
+    --badge-breaking-text: #dc2626;
+    --badge-breaking-border: rgba(239, 68, 68, 0.2);
+
+    --badge-issue-bg: rgba(245, 158, 11, 0.08);
+    --badge-issue-text: #d97706;
+    --badge-issue-border: rgba(245, 158, 11, 0.2);
+
+    --badge-change-bg: rgba(14, 165, 233, 0.08);
+    --badge-change-text: #0284c7;
+    --badge-change-border: rgba(14, 165, 233, 0.2);
+
+    --badge-announcement-bg: rgba(168, 85, 247, 0.08);
+    --badge-announcement-text: #7c3aed;
+    --badge-announcement-border: rgba(168, 85, 247, 0.2);
+}
+
+/* Theme Toggle Button Styles */
+.theme-toggle-container {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 10;
+}
+
+.theme-toggle-btn {
+    background: var(--bg-glass);
+    border: 1px solid var(--border-glass);
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 0.6rem;
+    border-radius: 50%;
+    width: 2.6rem;
+    height: 2.6rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    outline: none;
+    backdrop-filter: blur(12px);
+}
+
+.theme-toggle-btn:hover {
+    background: var(--bg-glass-hover);
+    border-color: var(--border-glass-hover);
+    transform: scale(1.05);
+}
+
+.theme-toggle-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.theme-toggle-btn .sun-icon {
+    display: none;
+}
+
+.theme-toggle-btn .moon-icon {
+    display: block;
+}
+
+:root[data-theme="light"] .theme-toggle-btn .sun-icon {
+    display: block;
+}
+
+:root[data-theme="light"] .theme-toggle-btn .moon-icon {
+    display: none;
+}
+
 /* Reset & Foundation */
 *, *::before, *::after {
     box-sizing: border-box;
